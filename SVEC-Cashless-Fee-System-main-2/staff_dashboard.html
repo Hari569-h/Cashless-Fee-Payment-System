@@ -1,0 +1,2489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Staff Dashboard - SVEC Fee Management</title>
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    
+    <!-- Payment Animations CSS and JS -->
+    <link rel="stylesheet" href="payment-animations.css">
+    <script src="payment-animations.js" defer></script>
+    
+    <!-- Bitquery Blockchain Integration -->
+    <script src="bitquery.js"></script>
+
+    <style>
+        :root {
+            /* Enhanced Color Palette */
+            --crimson: #9E1B32;
+            --ivy-green: #006B54;
+            --stone: #F8F9FA;
+            --slate: #2C3E50;
+            --gold: #D4AF37;
+            --primary: #4361ee;
+            --primary-light: #4895ef;
+            --secondary: #f72585;
+            --accent: #4cc9f0;
+            
+            /* Typography */
+            --font-main: 'Segoe UI', system-ui, sans-serif;
+            --text-xs: 0.75rem;
+            --text-sm: 0.875rem;
+            --text-md: 1rem;
+            --text-lg: 1.25rem;
+            --text-xl: 1.5rem;
+            --text-xxl: 2rem;
+            
+            /* Spacing */
+            --space-xxs: 0.25rem;
+            --space-xs: 0.5rem;
+            --space-sm: 0.75rem;
+            --space-md: 1rem;
+            --space-lg: 1.5rem;
+            --space-xl: 2rem;
+            --space-xxl: 3rem;
+            
+            /* Shadows */
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.12);
+            --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+            --shadow-lg: 0 10px 15px rgba(0,0,0,0.1);
+            --shadow-xl: 0 20px 25px rgba(0,0,0,0.1);
+            
+            /* Transitions */
+            --transition-fast: 0.15s ease;
+            --transition-normal: 0.3s ease;
+            --transition-slow: 0.5s ease;
+            
+            /* Border Radius */
+            --radius-sm: 0.5rem;
+            --radius-md: 0.75rem;
+            --radius-lg: 1rem;
+        }
+        
+        /* Month Picker Calendar Styles */
+        .month-only-calendar .flatpickr-days {
+            display: none !important;
+        }
+
+        .month-only-calendar .flatpickr-months {
+            padding-bottom: 20px;
+        }
+
+        /* Make month/year selection more prominent */
+        .flatpickr-current-month {
+            font-size: 1.2em !important;
+            padding: 10px 0 !important;
+        }
+
+        .flatpickr-monthDropdown-months {
+            font-weight: bold !important;
+        }
+        
+        /* Month Picker Calendar Styles */
+        .month-only-calendar .flatpickr-days {
+            display: none !important;
+        }
+
+        .month-only-calendar .flatpickr-months {
+            padding-bottom: 20px;
+        }
+
+        /* Make month/year selection more prominent */
+        .flatpickr-current-month {
+            font-size: 1.2em !important;
+            padding: 10px 0 !important;
+        }
+
+        .flatpickr-monthDropdown-months {
+            font-weight: bold !important;
+        }
+
+        /* Base Styles */
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: var(--font-main);
+            color: var(--slate);
+            line-height: 1.6;
+            background:
+                linear-gradient(135deg, var(--stone) 0%, #FFFFFF 100%),
+                repeating-linear-gradient(-45deg,
+                    transparent 0px var(--space-lg),
+                    rgba(0, 107, 84, 0.03) var(--space-lg) calc(var(--space-lg) * 2)
+                );
+            overflow-x: hidden;
+        }
+
+        /* Glassmorphism Effect */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-radius: var(--radius-lg);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            box-shadow: var(--shadow-lg);
+            transition: var(--transition-normal);
+        }
+
+        .glass-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        /* Main Container */
+        .container {
+            width: 90%;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: var(--space-xl) 0;
+        }
+        /* Header Section */
+        header {
+            text-align: center;
+            margin-bottom: var(--space-xl);
+            padding: var(--space-lg);
+            position: relative;
+            z-index: 10;
+        }
+
+        header h1 {
+            color: var(--slate);
+            font-size: var(--text-xl);
+            margin: 0 0 var(--space-xs);
+            font-weight: 700;
+            line-height: 1.2;
+            letter-spacing: -0.5px;
+        }
+
+        header p {
+            color: var(--ivy-green);
+            margin: 0;
+            font-size: var(--text-md);
+            font-weight: 500;
+        }
+
+        header h3 {
+            color: var(--crimson);
+            margin: var(--space-md) 0 0;
+            font-size: var(--text-lg);
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        /* Dashboard Sections */
+        section {
+            margin-bottom: var(--space-xl);
+            position: relative;
+            overflow: hidden;
+        }
+
+        section::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: conic-gradient(
+                from 0deg,
+                transparent 0% 20%,
+                var(--ivy-green) 20% 30%,
+                transparent 30% 70%,
+                var(--crimson) 70% 80%,
+                transparent 80% 100%
+            );
+            opacity: 0.08;
+            animation: rotate 30s linear infinite;
+            z-index: -1;
+        }
+
+        section h2 {
+            color: var(--slate);
+            font-size: var(--text-lg);
+            margin: 0 0 var(--space-lg);
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+
+        /* Form Elements */
+        .form-group {
+            margin-bottom: var(--space-md);
+            position: relative;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: var(--space-xs);
+            color: var(--slate);
+            font-size: var(--text-sm);
+            font-weight: 500;
+        }
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: var(--space-sm);
+            border: 2px solid rgba(0, 0, 0, 0.08);
+            border-radius: var(--radius-sm);
+            font-size: var(--text-sm);
+            background: rgba(255, 255, 255, 0.9);
+            transition: var(--transition-fast);
+            font-family: var(--font-main);
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+        }
+
+        /* Buttons */
+        button {
+            padding: var(--space-sm) var(--space-md);
+            border-radius: var(--radius-sm);
+            font-size: var(--text-sm);
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition-fast);
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-xs);
+        }
+
+        .dashboard-option-btn {
+            background: var(--primary);
+            color: white;
+            width: 100%;
+            margin-bottom: var(--space-sm);
+        }
+
+        .dashboard-option-btn:hover {
+            background: var(--primary-light);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .logout-btn {
+            position: absolute;
+            top: var(--space-lg);
+            right: var(--space-lg);
+            background: var(--crimson);
+            color: white;
+            padding: var(--space-xs) var(--space-sm);
+            border-radius: var(--radius-sm);
+        }
+
+        .back-button {
+            background: var(--slate);
+            color: white;
+            margin-bottom: var(--space-md);
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: var(--space-lg);
+            margin: var(--space-lg) 0;
+        }
+
+        .stat-card {
+            padding: var(--space-lg);
+        }
+
+        .stat-card h3 {
+            color: var(--ivy-green);
+            font-size: var(--text-sm);
+            margin: 0 0 var(--space-sm);
+            display: flex;
+            align-items: center;
+            gap: var(--space-xs);
+        }
+
+        .stat-value {
+            font-size: var(--text-xl);
+            font-weight: 700;
+            color: var(--slate);
+            margin-bottom: var(--space-xs);
+        }
+        /* Payment History Table */
+        .payment-history-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin: var(--space-md) 0;
+        }
+
+        .payment-history-table th {
+            background-color: var(--ivy-green);
+            color: white;
+            text-align: left;
+            padding: var(--space-sm);
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+        }
+
+        .payment-history-table td {
+            padding: var(--space-sm);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .payment-history-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .payment-history-table tr:hover {
+            background-color: rgba(0, 107, 84, 0.03);
+        }
+
+        /* Recent Transactions */
+        .recent-payments {
+            padding: var(--space-lg);
+        }
+
+        .filter-controls {
+            display: flex;
+            gap: var(--space-md);
+            align-items: center;
+            margin-bottom: var(--space-lg);
+            flex-wrap: wrap;
+        }
+
+        .filter-controls input[type="date"] {
+            padding: var(--space-sm);
+            border: 2px solid rgba(0, 0, 0, 0.08);
+            border-radius: var(--radius-sm);
+            font-family: var(--font-main);
+            transition: var(--transition-fast);
+        }
+
+        .filter-controls input[type="date"]:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+        }
+
+        .filter-btn {
+            padding: var(--space-sm) var(--space-md);
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: var(--transition-fast);
+        }
+
+        .filter-btn:hover {
+            background: var(--primary-light);
+            transform: translateY(-2px);
+        }
+
+        .recent-payments-list {
+            margin-top: var(--space-md);
+            max-height: 500px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary) rgba(0,0,0,0.1);
+        }
+
+        .recent-payments-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .recent-payments-list::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.1);
+            border-radius: 10px;
+        }
+
+        .recent-payments-list::-webkit-scrollbar-thumb {
+            background-color: var(--primary);
+            border-radius: 10px;
+        }
+
+        .payment-item {
+            display: flex;
+            justify-content: space-between;
+            padding: var(--space-md);
+            border-radius: var(--radius-sm);
+            margin-bottom: var(--space-xs);
+            transition: var(--transition-fast);
+        }
+        .payment-item:hover {
+            background-color: rgba(67, 97, 238, 0.05);
+            transform: translateX(5px);
+        }
+
+        .payment-info {
+            flex: 2;
+        }
+
+        .payment-amount {
+            flex: 1;
+            text-align: right;
+            font-weight: 700;
+            color: var(--ivy-green);
+        }
+
+        .transaction-summary {
+            text-align: right;
+            margin-top: var(--space-lg);
+            font-size: var(--text-md);
+            color: var(--slate);
+            padding: var(--space-sm);
+            background: rgba(0,0,0,0.02);
+            border-radius: var(--radius-sm);
+        }
+
+        /* Utility Classes */
+        .hidden {
+            display: none;
+        }
+
+        .error-message {
+            color: var(--crimson);
+            padding: var(--space-sm);
+            background: rgba(158, 27, 50, 0.1);
+            border-radius: var(--radius-sm);
+            border: 1px solid rgba(158, 27, 50, 0.2);
+            margin-top: var(--space-sm);
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .success-message {
+            color: var(--ivy-green);
+            padding: var(--space-sm);
+            background: rgba(0, 107, 84, 0.1);
+            border-radius: var(--radius-sm);
+            border: 1px solid rgba(0, 107, 84, 0.2);
+            margin-top: var(--space-sm);
+            text-align: center;
+            font-weight: 500;
+        }
+
+        /* Animations */
+        @keyframes rotate {
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .animate-in {
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        /* Month Selector Styles */
+        .month-selector {
+            display: flex;
+            align-items: center;
+            margin-bottom: var(--space-md);
+            position: relative;
+        }
+
+        .calendar-input {
+            flex-grow: 1;
+            padding: var(--space-sm);
+            border: 2px solid rgba(0, 0, 0, 0.08);
+            border-radius: var(--radius-sm);
+            font-family: var(--font-main);
+            transition: var(--transition-fast);
+        }
+
+        .calendar-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+            outline: none;
+        }
+        .calendar-btn {
+            background: var(--ivy-green);
+            color: white;
+            border: none;
+            border-radius: var(--radius-sm);
+            padding: var(--space-xs) var(--space-sm);
+            margin-left: var(--space-xs);
+            cursor: pointer;
+            transition: var(--transition-fast);
+        }
+
+        .calendar-btn:hover {
+            background: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        /* Optional: Add a custom calendar popup styling if you want to use a JS calendar library */
+        .calendar-popup {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            z-index: 100;
+            background: white;
+            border-radius: var(--radius-sm);
+            box-shadow: var(--shadow-lg);
+            display: none;
+        }
+
+        .calendar-popup.active {
+            display: block;
+            animation: fadeIn 0.3s ease forwards;
+        }
+        
+        /* Responsive Adjustments */
+        @media (max-width: 992px) {
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            :root {
+                --text-xs: 0.75rem;
+                --text-sm: 0.875rem;
+                --text-md: 0.9375rem;
+                --text-lg: 1.125rem;
+                --text-xl: 1.25rem;
+            }
+
+            .container {
+                width: 95%;
+                padding: var(--space-lg) 0;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .filter-controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
+        /* n8n Chat Widget Variables - SVEC Theme */
+        :root {
+            --chat--color-primary: #4361ee;
+            --chat--color-primary-shade-50: #4895ef;
+            --chat--color-primary-shade-100: #3f37c9;
+            --chat--color-secondary: #4cc9f0;
+            --chat--color-secondary-shade-50: #7dd3fc;
+            --chat--color-white: #ffffff;
+            --chat--color-light: #f8fafc;
+            --chat--color-light-shade-50: #f1f5f9;
+            --chat--color-light-shade-100: #e2e8f0;
+            --chat--color-medium: #cbd5e1;
+            --chat--color-dark: #2c3e50;
+            --chat--color-disabled: #94a3b8;
+            --chat--color-typing: #64748b;
+
+            --chat--spacing: 1rem;
+            --chat--border-radius: 0.75rem;
+            --chat--transition-duration: 0.3s;
+
+            --chat--window--width: 420px;
+            --chat--window--height: 650px;
+
+            --chat--header-height: auto;
+            --chat--header--padding: 1.5rem;
+            --chat--header--background: linear-gradient(135deg, #4361ee, #4895ef);
+            --chat--header--color: var(--chat--color-white);
+            --chat--header--border-bottom: none;
+            --chat--header--box-shadow: 0 4px 20px rgba(67, 97, 238, 0.2);
+
+            --chat--message--background: var(--chat--color-white);
+            --chat--message--color: var(--chat--color-dark);
+            --chat--message--padding: 1rem;
+            --chat--message--border-radius: 1rem;
+            --chat--message--box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --chat--message--margin: 0.75rem 0;
+
+            --chat--message--bot--background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+            --chat--message--bot--color: var(--chat--color-dark);
+            --chat--message--bot--border: 1px solid var(--chat--color-light-shade-100);
+
+            --chat--message--user--background: linear-gradient(135deg, #4361ee, #4895ef);
+            --chat--message--user--color: var(--chat--color-white);
+            --chat--message--user--box-shadow: 0 4px 12px rgba(67, 97, 238, 0.3);
+
+            --chat--input--background: var(--chat--color-white);
+            --chat--input--color: var(--chat--color-dark);
+            --chat--input--border: 2px solid var(--chat--color-light-shade-100);
+            --chat--input--border-active: 2px solid var(--chat--color-primary);
+            --chat--input--border-radius: 0.75rem;
+            --chat--input--padding: 1rem;
+            --chat--input--box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+
+            --chat--button--background: linear-gradient(135deg, #4361ee, #4895ef);
+            --chat--button--color: var(--chat--color-white);
+            --chat--button--border: none;
+            --chat--button--border-radius: 0.75rem;
+            --chat--button--padding: 0.875rem 1.5rem;
+            --chat--button--box-shadow: 0 4px 12px rgba(67, 97, 238, 0.3);
+            --chat--button--hover-transform: translateY(-2px);
+
+            --chat--button--secondary--background: linear-gradient(135deg, #4cc9f0, #7dd3fc);
+            --chat--button--secondary--color: var(--chat--color-white);
+            --chat--button--secondary--box-shadow: 0 4px 12px rgba(76, 201, 240, 0.3);
+
+            --chat--message--pre--background: rgba(67, 97, 238, 0.05);
+            --chat--message--pre--border: 1px solid rgba(67, 97, 238, 0.1);
+            --chat--message--pre--border-radius: 0.5rem;
+
+            --chat--toggle--background: linear-gradient(135deg, #4361ee, #4895ef);
+            --chat--toggle--hover--background: linear-gradient(135deg, #4895ef, #7209b7);
+            --chat--toggle--active--background: linear-gradient(135deg, #3f37c9, #4361ee);
+            --chat--toggle--color: var(--chat--color-white);
+            --chat--toggle--size: 70px;
+            --chat--toggle--box-shadow: 0 8px 25px rgba(67, 97, 238, 0.4);
+            --chat--toggle--border-radius: 50%;
+        }
+
+        /* Complaints Chatbot Styles */
+        .chatbot-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: var(--radius-lg);
+            padding: 0;
+            margin-bottom: var(--space-lg);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            overflow: hidden;
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+            padding: var(--space-md);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-status {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #4ade80;
+            animation: pulse 2s infinite;
+        }
+
+        .status-indicator.online {
+            background: #4ade80;
+        }
+
+        .chat-actions {
+            display: flex;
+            gap: var(--space-xs);
+        }
+
+        .chat-action-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: var(--space-xs);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .chat-action-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .chat-messages {
+            height: 400px;
+            overflow-y: auto;
+            padding: var(--space-md);
+            background: #f8fafc;
+        }
+
+        .message {
+            display: flex;
+            gap: var(--space-sm);
+            margin-bottom: var(--space-md);
+            animation: slideInUp 0.3s ease-out;
+        }
+
+        .message.user-message {
+            flex-direction: row-reverse;
+        }
+
+        .message-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .bot-message .message-avatar {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+        }
+
+        .user-message .message-avatar {
+            background: linear-gradient(135deg, var(--secondary), #ff6b9d);
+            color: white;
+        }
+
+        .message-content {
+            background: white;
+            padding: var(--space-md);
+            border-radius: var(--radius-md);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            max-width: 70%;
+            position: relative;
+        }
+
+        .user-message .message-content {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+        }
+
+        .message-content p {
+            margin: 0;
+            line-height: 1.5;
+        }
+
+        .message-time {
+            font-size: var(--text-xs);
+            color: #64748b;
+            align-self: flex-end;
+            margin: 0 var(--space-sm);
+        }
+
+        .quick-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-xs);
+            margin-top: var(--space-md);
+        }
+
+        .quick-action-btn {
+            background: linear-gradient(135deg, var(--accent), #7dd3fc);
+            color: white;
+            border: none;
+            padding: var(--space-xs) var(--space-sm);
+            border-radius: var(--radius-sm);
+            font-size: var(--text-xs);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            display: flex;
+            align-items: center;
+            gap: var(--space-xxs);
+        }
+
+        .quick-action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(76, 201, 240, 0.3);
+        }
+
+        .chat-typing {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            padding: var(--space-md);
+            background: #f1f5f9;
+            color: #64748b;
+        }
+
+        .typing-indicator {
+            display: flex;
+            gap: 4px;
+        }
+
+        .typing-indicator span {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #94a3b8;
+            animation: typing 1.4s infinite ease-in-out;
+        }
+
+        .typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
+        .typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes typing {
+            0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
+            40% { transform: scale(1); opacity: 1; }
+        }
+
+        .chat-input-container {
+            padding: var(--space-md);
+            background: white;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .chat-input-wrapper {
+            display: flex;
+            gap: var(--space-sm);
+            margin-bottom: var(--space-sm);
+        }
+
+        #chat-input {
+            flex: 1;
+            padding: var(--space-md);
+            border: 2px solid #e2e8f0;
+            border-radius: var(--radius-md);
+            font-family: var(--font-main);
+            font-size: var(--text-md);
+            transition: all var(--transition-fast);
+        }
+
+        #chat-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+        }
+
+        .send-btn {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+            border: none;
+            padding: var(--space-md);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .send-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(67, 97, 238, 0.3);
+        }
+
+        .send-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .input-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .input-action-btn {
+            background: none;
+            border: none;
+            color: #64748b;
+            padding: var(--space-xs);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .input-action-btn:hover {
+            color: var(--primary);
+            background: rgba(67, 97, 238, 0.1);
+        }
+
+        .character-count {
+            font-size: var(--text-xs);
+            color: #94a3b8;
+        }
+
+        .complaints-summary {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: var(--radius-lg);
+            padding: var(--space-lg);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .complaints-summary h3 {
+            margin: 0 0 var(--space-lg) 0;
+            color: var(--slate);
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+
+        .summary-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: var(--space-md);
+            margin-bottom: var(--space-lg);
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: var(--space-md);
+            background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+            border-radius: var(--radius-md);
+            border: 1px solid #e2e8f0;
+        }
+
+        .stat-number {
+            display: block;
+            font-size: var(--text-xxl);
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: var(--space-xs);
+        }
+
+        .stat-label {
+            font-size: var(--text-sm);
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        .view-complaints-btn {
+            width: 100%;
+            background: linear-gradient(135deg, var(--secondary), #ff6b9d);
+            color: white;
+            border: none;
+            padding: var(--space-md);
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-sm);
+        }
+
+        .view-complaints-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(247, 37, 133, 0.3);
+        }
+
+        /* Responsive Design for Chatbot */
+        @media (max-width: 768px) {
+            .chat-messages {
+                height: 300px;
+            }
+
+            .message-content {
+                max-width: 85%;
+            }
+
+            .quick-actions {
+                flex-direction: column;
+            }
+
+            .quick-action-btn {
+                justify-content: center;
+            }
+
+            .summary-stats {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Animation Keyframes */
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Custom n8n Chat Widget Overrides */
+        .n8n-chat {
+            font-family: var(--font-main) !important;
+        }
+
+        .n8n-chat .chat-window {
+            border-radius: 1rem !important;
+            box-shadow: 0 20px 60px rgba(67, 97, 238, 0.15) !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        }
+
+        .n8n-chat .chat-header {
+            background: linear-gradient(135deg, #4361ee, #4895ef) !important;
+            border-radius: 1rem 1rem 0 0 !important;
+            padding: 1.5rem !important;
+        }
+
+        .n8n-chat .chat-header h3 {
+            color: white !important;
+            font-weight: 600 !important;
+            margin: 0 !important;
+        }
+
+        .n8n-chat .chat-header p {
+            color: rgba(255, 255, 255, 0.8) !important;
+            margin: 0.25rem 0 0 0 !important;
+        }
+
+        .n8n-chat .chat-message {
+            margin: 0.75rem 0 !important;
+        }
+
+        .n8n-chat .chat-message-from-bot {
+            background: linear-gradient(135deg, #f8fafc, #f1f5f9) !important;
+            border: 1px solid #e2e8f0 !important;
+            border-radius: 1rem 1rem 1rem 0.25rem !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+        }
+
+        .n8n-chat .chat-message-from-user {
+            background: linear-gradient(135deg, #4361ee, #4895ef) !important;
+            border-radius: 1rem 1rem 0.25rem 1rem !important;
+            box-shadow: 0 4px 12px rgba(67, 97, 238, 0.3) !important;
+        }
+
+        .n8n-chat .chat-message-from-user .chat-message-markdown,
+        .n8n-chat .chat-message-from-user .chat-message-markdown p {
+            color: white !important;
+        }
+
+        .n8n-chat .chat-input-form {
+            padding: 1rem !important;
+            background: white !important;
+            border-top: 1px solid #e2e8f0 !important;
+        }
+
+        .n8n-chat .chat-input {
+            border: 2px solid #e2e8f0 !important;
+            border-radius: 0.75rem !important;
+            padding: 1rem !important;
+            font-family: var(--font-main) !important;
+            transition: all 0.3s ease !important;
+        }
+
+        .n8n-chat .chat-input:focus {
+            border-color: #4361ee !important;
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1) !important;
+            outline: none !important;
+        }
+
+        .n8n-chat .chat-input-send-button {
+            background: linear-gradient(135deg, #4361ee, #4895ef) !important;
+            border: none !important;
+            border-radius: 0.75rem !important;
+            padding: 1rem !important;
+            transition: all 0.3s ease !important;
+        }
+
+        .n8n-chat .chat-input-send-button:hover {
+            transform: translateY(-2px) !important;
+            box-shadow: 0 4px 12px rgba(67, 97, 238, 0.3) !important;
+        }
+
+        .n8n-chat .chat-toggle {
+            background: linear-gradient(135deg, #4361ee, #4895ef) !important;
+            border: none !important;
+            border-radius: 50% !important;
+            width: 70px !important;
+            height: 70px !important;
+            box-shadow: 0 8px 25px rgba(67, 97, 238, 0.4) !important;
+            transition: all 0.3s ease !important;
+        }
+
+        .n8n-chat .chat-toggle:hover {
+            transform: translateY(-3px) scale(1.05) !important;
+            box-shadow: 0 12px 35px rgba(67, 97, 238, 0.5) !important;
+        }
+
+        .n8n-chat .chat-messages-list {
+            background: #f8fafc !important;
+            padding: 1rem !important;
+        }
+
+        /* Custom scrollbar for chat */
+        .n8n-chat .chat-messages-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .n8n-chat .chat-messages-list::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 3px;
+        }
+
+        .n8n-chat .chat-messages-list::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #4361ee, #4895ef);
+            border-radius: 3px;
+        }
+
+        .n8n-chat .chat-messages-list::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #3f37c9, #4361ee);
+        }
+
+        /* Animation for new messages */
+        .n8n-chat .chat-message {
+            animation: slideInMessage 0.3s ease-out;
+        }
+
+        @keyframes slideInMessage {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+    <!-- n8n Chat Widget -->
+    <link href="https://cdn.jsdelivr.net/npm/@n8n/chat/dist/style.css" rel="stylesheet" />
+    <script type="module">
+        import { createChat } from 'https://cdn.jsdelivr.net/npm/@n8n/chat/dist/chat.bundle.es.js';
+        createChat({
+            webhookUrl: 'https://hari1299.app.n8n.cloud/webhook/53e3f498-990f-41a6-9d83-d3c3966a921b/chat'
+        });
+        
+        // Replace Nathan with Hari in chat messages
+        function replaceNameInChat() {
+            const chatMessages = document.querySelectorAll('.n8n-chat .chat-message-markdown p, .n8n-chat .chat-message-markdown');
+            chatMessages.forEach(message => {
+                if (message.textContent && message.textContent.includes('Nathan')) {
+                    message.textContent = message.textContent.replace(/Nathan/g, 'Hari');
+                }
+                if (message.innerHTML && message.innerHTML.includes('Nathan')) {
+                    message.innerHTML = message.innerHTML.replace(/Nathan/g, 'Hari');
+                }
+            });
+        }
+        
+        // Monitor for new messages and replace names
+        const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                if (mutation.type === 'childList') {
+                    replaceNameInChat();
+                }
+            });
+        });
+        
+        // Start observing when the chat widget loads
+        setTimeout(() => {
+            const chatContainer = document.querySelector('.n8n-chat');
+            if (chatContainer) {
+                observer.observe(chatContainer, {
+                    childList: true,
+                    subtree: true
+                });
+                replaceNameInChat(); // Replace existing messages
+            }
+        }, 2000);
+    </script>
+</head>
+<body>
+    <div class="container">
+        <header class="glass-card animate-in" style="animation-delay: 0.1s;">
+            <h1>Sri Venkateshwara Engineering College</h1>
+            <p>Affiliated to JNTU-H, Suryapet-508213, Telangana</p>
+            <h3>Cashless Fee Management System - Staff Dashboard</h3>
+            <button id="logout-button" class="logout-btn">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
+        </header>
+
+        <section id="dashboard-options" class="glass-card animate-in" style="animation-delay: 0.2s;">
+            <h2><i class="fas fa-tachometer-alt"></i> Dashboard Options</h2>
+            <div class="options-group">
+                <button id="fetch-fee-details-button" class="dashboard-option-btn">
+                    <i class="fas fa-search"></i> Fetch Student Details
+                </button>
+                <button id="add-student-button" class="dashboard-option-btn">
+                    <i class="fas fa-user-plus"></i> Add New Student
+                </button>
+                <button id="show-management-dashboard-button" class="dashboard-option-btn">
+                    <i class="fas fa-chart-line"></i> Management Dashboard
+                </button>
+
+            </div>
+        </section>
+        <section id="management-dashboard" class="hidden glass-card animate-in" style="animation-delay: 0.3s;">
+            <h2><i class="fas fa-chart-line"></i> Management Dashboard</h2>
+            <button onclick="showSection('dashboard-options')" class="back-button">
+                <i class="fas fa-arrow-left"></i> Back to Main
+            </button>
+
+            <div class="stats-grid">
+                <div class="stat-card glass-card">
+                    <h3><i class="fas fa-users"></i> Student Statistics</h3>
+                    <div class="stat-value" id="total-students">0</div>
+                    <p>Total Enrolled Students</p>
+                    <button id="export-students-button" class="filter-btn" style="width: 100%; margin-top: var(--space-md);">
+                        <i class="fas fa-file-export"></i> Export Student Data
+                    </button>
+                </div>
+
+                <div class="stat-card glass-card">
+                    <h3><i class="fas fa-rupee-sign"></i> Today's Payments</h3>
+                    <div class="stat-value">₹<span id="daily-total">0</span></div>
+                    <p>Transactions: <span id="daily-count">0</span></p>
+                </div>
+
+                <div class="stat-card glass-card">
+                    <h3><i class="fas fa-calendar-alt"></i> Monthly Report</h3>
+                    <div class="month-selector">
+                        <button id="prev-month-btn" class="calendar-btn">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <input type="month" id="report-month" class="form-control calendar-input">
+                        <button id="show-calendar-btn" class="calendar-btn">
+                            <i class="fas fa-calendar-alt"></i>
+                        </button>
+                        <button id="next-month-btn" class="calendar-btn">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                    <div class="stat-value">₹<span id="monthly-total">0</span></div>
+                </div>
+            </div>
+
+            <div class="payment-history-search">
+                <h3><i class="fas fa-history"></i> Student Payment History</h3>
+                <div class="search-group">
+                    <input type="text" id="payment-search-id" placeholder="Enter Student ID">
+                    <button onclick="searchPaymentHistory()">
+                        <i class="fas fa-search"></i> Search
+                    </button>
+                </div>
+                <div id="payment-history-list" class="payment-history-list"></div>
+            </div>
+
+            <div class="recent-payments">
+                <h3><i class="fas fa-exchange-alt"></i> Recent Transactions</h3>
+                
+                <div class="filter-controls">
+                    <input type="date" id="transaction-filter-date" class="glass-card" style="flex-grow:1;">
+                    <button onclick="filterTransactionsByDate()" class="filter-btn">
+                        <i class="fas fa-filter"></i> Filter
+                    </button>
+                    <button onclick="clearDateFilter()" class="filter-btn" style="background: var(--slate);">
+                        <i class="fas fa-sync-alt"></i> Clear
+                    </button>
+                    <button id="export-payments-button" class="filter-btn" style="background: var(--ivy-green);">
+                        <i class="fas fa-file-export"></i> Export
+                    </button>
+                </div>
+                
+                <div id="recent-payments-list" class="recent-payments-list">
+                    <!-- Transactions will be loaded here -->
+                </div>
+                
+                <div class="transaction-summary glass-card">
+                    Showing <span id="filtered-count">0</span> transactions • Total: ₹<span id="filtered-total">0.00</span>
+                </div>
+            </div>
+        </section>
+        <section id="search-section" class="hidden glass-card animate-in" style="animation-delay: 0.2s;">
+            <h2><i class="fas fa-search"></i> Find Student Fee Details</h2>
+            <form id="student-search-form">
+                <div class="form-group">
+                    <label for="searchStudentId"><i class="fas fa-id-card"></i> Enter Student ID:</label>
+                    <input type="text" id="searchStudentId" name="searchStudentId" required>
+                </div>
+                <button type="submit" class="dashboard-option-btn">
+                    <i class="fas fa-search"></i> Search
+                </button>
+                <p id="search-error" class="error-message"></p>
+            </form>
+            <button onclick="showSection('dashboard-options')" class="back-button">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </button>
+        </section>
+
+        <section id="add-student-section" class="hidden glass-card animate-in" style="animation-delay: 0.2s;">
+            <h2><i class="fas fa-user-plus"></i> Add New Student</h2>
+            <form id="add-student-form">
+                <div class="form-group">
+                    <label for="studentId"><i class="fas fa-id-card"></i> Student ID:</label>
+                    <input type="text" id="studentId" name="studentId" required>
+                </div>
+                <div class="form-group">
+                    <label for="name"><i class="fas fa-user"></i> Student Name:</label>
+                    <input type="text" id="name" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="fathername"><i class="fas fa-male"></i> Father's Name:</label>
+                    <input type="text" id="fathername" name="fathername" required>
+                </div>
+                <div class="form-group">
+                    <label for="mothername"><i class="fas fa-female"></i> Mother's Name:</label>
+                    <input type="text" id="mothername" name="mothername" required>
+                </div>
+                <div class="form-group">
+                    <label for="mobilenumber"><i class="fas fa-phone"></i> Mobile Number:</label>
+                    <input type="tel" id="mobilenumber" name="mobilenumber" required pattern="[0-9]{10}">
+                </div>
+                <div class="form-group">
+                    <label for="course"><i class="fas fa-graduation-cap"></i> Course:</label>
+                    <select id="course" name="course" required>
+                        <option value="">Select Course</option>
+                        <option value="B.Tech">B.Tech</option>
+                        <option value="Diploma">Diploma</option>
+                        <option value="M.Tech">M.Tech</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="branch"><i class="fas fa-code-branch"></i> Branch:</label>
+                    <select id="branch" name="branch" required>
+                        <option value="">Select Branch</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="year"><i class="fas fa-calendar-alt"></i> Year:</label>
+                    <select id="year" name="year" required>
+                        <option value="">Select Year</option>
+                        <option value="I Year">I Year</option>
+                        <option value="II Year">II Year</option>
+                        <option value="III Year">III Year</option>
+                        <option value="IV Year">IV Year</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="totalfee"><i class="fas fa-rupee-sign"></i> Total Fee (₹):</label>
+                    <input type="number" id="totalfee" name="totalfee" required min="0" step="1000">
+                </div>
+                <div class="form-group">
+                    <label for="balancefee"><i class="fas fa-rupee-sign"></i> Balance Fee (₹):</label>
+                    <input type="number" id="balancefee" name="balancefee" required min="0" step="1000">
+                </div>
+                <button type="submit" class="dashboard-option-btn">
+                    <i class="fas fa-save"></i> Add Student
+                </button>
+                <p id="add-student-message" class="error-message"></p>
+            </form>
+            <button onclick="showSection('dashboard-options')" class="back-button">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </button>
+        </section>
+        <section id="student-details-section" class="hidden glass-card animate-in" style="animation-delay: 0.2s;">
+            <h2><i class="fas fa-user-graduate"></i> Student Details</h2>
+            <div id="student-info">
+                <p><strong><i class="fas fa-id-card"></i> Student ID:</strong> <span id="s-studentId"></span></p>
+                <p><strong><i class="fas fa-user"></i> Name:</strong> <span id="s-name"></span></p>
+                <p><strong><i class="fas fa-male"></i> Father's Name:</strong> <span id="s-fathername"></span></p>
+                <p><strong><i class="fas fa-female"></i> Mother's Name:</strong> <span id="s-mothername"></span></p>
+                <p><strong><i class="fas fa-phone"></i> Mobile Number:</strong> <span id="s-mobilenumber"></span></p>
+                <p><strong><i class="fas fa-graduation-cap"></i> Course:</strong> <span id="s-course"></span></p>
+                <p><strong><i class="fas fa-calendar-alt"></i> Year:</strong> <span id="s-year"></span></p>
+                <p><strong><i class="fas fa-rupee-sign"></i> Total Fee:</strong> ₹<span id="s-totalfee"></span></p>
+                <p><strong><i class="fas fa-rupee-sign"></i> Balance Fee:</strong> ₹<span id="s-balancefee"></span></p>
+            </div>
+
+            <div class="payment-methods">
+                <h3><i class="fas fa-money-bill-wave"></i> Select Payment Method</h3>
+                <div class="method-option">
+                    <input type="radio" id="method-razorpay" name="payment-method" value="razorpay" checked>
+                    <label for="method-razorpay"><i class="fas fa-credit-card"></i> Online Payment (Razorpay)</label>
+                </div>
+                <div class="method-option">
+                    <input type="radio" id="method-cash" name="payment-method" value="cash">
+                    <label for="method-cash"><i class="fas fa-money-bill-alt"></i> Cash Payment</label>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="payment-amount"><i class="fas fa-rupee-sign"></i> Amount (₹):</label>
+                <input type="number" id="payment-amount" min="1" step="100" placeholder="Enter amount to pay">
+            </div>
+            <button id="pay-fee-button" class="dashboard-option-btn">
+                <i class="fas fa-hand-holding-usd"></i> Pay Fee
+            </button>
+            <p id="payment-message" class="error-message"></p>
+
+            <div class="button-group">
+                <button id="back-to-search-button" class="back-button">
+                    <i class="fas fa-arrow-left"></i> Back to Search
+                </button>
+                <button id="back-to-dashboard-from-details" class="back-button">
+                    <i class="fas fa-tachometer-alt"></i> Back to Dashboard
+                </button>
+            </div>
+        </section>
+
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    
+    <!-- PDF generation libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+
+    <script src="auth.js"></script>
+    <script>
+        // Enhanced Transaction Management
+        let allTransactions = [];
+        
+        function loadTransactions() {
+            db.collection("payments")
+                .orderBy("timestamp", "desc")
+                .limit(20) // Increase limit to show more transactions
+                .get()
+                .then(async (querySnapshot) => {
+                    allTransactions = [];
+                    
+                    // Use Promise.all to wait for all student data to be fetched
+                    const transactionsWithStudentData = await Promise.all(
+                        querySnapshot.docs.map(async (doc) => {
+                            const txnData = doc.data();
+                            
+                            // Fetch student data for each transaction
+                            let studentData = {};
+                            if (txnData.studentId) {
+                                const studentDoc = await db.collection("students").doc(txnData.studentId).get();
+                                if (studentDoc.exists) {
+                                    studentData = studentDoc.data();
+                                }
+                            }
+                            
+                            // Ensure there's a receipt number, either from the database or generate one
+                            let receiptNumber = txnData.receiptNumber;
+                            if (!receiptNumber) {
+                                // Generate a deterministic receipt number based on transaction ID
+                                const idHash = doc.id.split('').reduce((a, b) => {
+                                    a = ((a << 5) - a) + b.charCodeAt(0);
+                                    return a & a;
+                                }, 0);
+                                receiptNumber = `SVEC-${Math.abs(idHash).toString().slice(0, 6)}`;
+                                
+                                // Update the Firestore record with the receipt number so future lookups have it
+                                db.collection("payments").doc(doc.id).update({
+                                    receiptNumber: receiptNumber
+                                }).catch(err => console.error("Error updating receipt number:", err));
+                            }
+                            
+                            // Return combined transaction and student data
+                            return {
+                                id: doc.id,
+                                studentId: txnData.studentId || 'N/A',
+                                name: txnData.studentName || studentData.name || 'N/A',
+                                amount: txnData.amount || 0,
+                                method: txnData.method || txnData.paymentMethod || "cash", // Check both field names
+                                status: txnData.status || "completed",
+                                timestamp: txnData.timestamp,
+                                receiptNumber: receiptNumber, // Now we ensure this is always populated
+                                course: studentData.course || txnData.course || 'N/A',
+                                year: studentData.year || txnData.year || 'N/A'
+                            };
+                        })
+                    );
+                    
+                    allTransactions = transactionsWithStudentData;
+                    displayTransactions(allTransactions);
+                })
+                .catch((error) => {
+                    console.error("Error loading transactions: ", error);
+                    loadSampleTransactions();
+                });
+        }
+        
+        // Course, Branch and Year selection logic
+        document.getElementById('course').addEventListener('change', function() {
+            const courseValue = this.value;
+            const branchSelect = document.getElementById('branch');
+            const yearSelect = document.getElementById('year');
+            
+            // Clear existing branch options
+            branchSelect.innerHTML = '<option value="">Select Branch</option>';
+            
+            // Clear existing year options
+            yearSelect.innerHTML = '<option value="">Select Year</option>';
+            
+            // Add branches and years based on selected course
+            if (courseValue === 'B.Tech') {
+                // B.Tech branches
+                const branches = [
+                    'Computer Science and Engineering',
+                    'Information Technology',
+                    'Electronics and Communication Engineering',
+                    'Electrical and Electronics Engineering',
+                    'Mechanical Engineering',
+                    'Civil Engineering',
+                    'Artificial Intelligence and Data Science',
+                    'Artificial Intelligence and Machine Learning'
+                ];
+                
+                // B.Tech years (4 years)
+                const years = [
+                    'I Year',
+                    'II Year',
+                    'III Year',
+                    'IV Year'
+                ];
+                
+                // Add branch options
+                branches.forEach(branch => {
+                    const option = document.createElement('option');
+                    option.value = branch;
+                    option.textContent = branch;
+                    branchSelect.appendChild(option);
+                });
+                
+                // Add year options
+                years.forEach(year => {
+                    const option = document.createElement('option');
+                    option.value = year;
+                    option.textContent = year;
+                    yearSelect.appendChild(option);
+                });
+            } 
+            else if (courseValue === 'Diploma') {
+                // Diploma branches
+                const branches = [
+                    'Computer Engineering',
+                    'Information Technology',
+                    'Electronics Engineering',
+                    'Electrical Engineering',
+                    'Mechanical Engineering',
+                    'Civil Engineering'
+                ];
+                
+                // Diploma years (3 years)
+                const years = [
+                    'I Year',
+                    'II Year',
+                    'III Year'
+                ];
+                
+                // Add branch options
+                branches.forEach(branch => {
+                    const option = document.createElement('option');
+                    option.value = branch;
+                    option.textContent = branch;
+                    branchSelect.appendChild(option);
+                });
+                
+                // Add year options
+                years.forEach(year => {
+                    const option = document.createElement('option');
+                    option.value = year;
+                    option.textContent = year;
+                    yearSelect.appendChild(option);
+                });
+            }
+            else if (courseValue === 'M.Tech') {
+                // M.Tech branches
+                const branches = [
+                    'Computer Science and Engineering',
+                    'Digital Systems and Signal Processing',
+                    'Power Electronics',
+                    'Structural Engineering',
+                    'Thermal Engineering',
+                    'VLSI System Design'
+                ];
+                
+                // M.Tech years (2 years)
+                const years = [
+                    'I Year',
+                    'II Year'
+                ];
+                
+                // Add branch options
+                branches.forEach(branch => {
+                    const option = document.createElement('option');
+                    option.value = branch;
+                    option.textContent = branch;
+                    branchSelect.appendChild(option);
+                });
+                
+                // Add year options
+                years.forEach(year => {
+                    const option = document.createElement('option');
+                    option.value = year;
+                    option.textContent = year;
+                    yearSelect.appendChild(option);
+                });
+            }
+        });
+        function displayTransactions(transactions) {
+            const container = document.getElementById('recent-payments-list');
+            container.innerHTML = '';
+            
+            if (transactions.length === 0) {
+                container.innerHTML = `
+                    <div class="payment-item" style="justify-content:center;">
+                        <p style="color:var(--slate);">No transactions found</p>
+                    </div>
+                `;
+                updateSummary(0, 0);
+                return;
+            }
+            
+            transactions.forEach(txn => {
+                const date = txn.timestamp.toDate();
+                const dateStr = date.toLocaleDateString('en-IN');
+                const timeStr = date.toLocaleTimeString('en-IN', {hour: '2-digit', minute:'2-digit'});
+                
+                // Determine payment method display and icon
+                let methodDisplay, methodIcon;
+                if (txn.method === 'razorpay' || txn.method === 'online') {
+                    methodDisplay = 'Online';
+                    methodIcon = 'credit-card';
+                } else if (txn.method === 'cash') {
+                    methodDisplay = 'Cash';
+                    methodIcon = 'money-bill-alt';
+                } else {
+                    // Handle any other payment methods
+                    methodDisplay = txn.method ? txn.method.charAt(0).toUpperCase() + txn.method.slice(1) : 'Unknown';
+                    methodIcon = 'money-check-alt'; // Default icon for other methods
+                }
+                
+                const item = document.createElement('div');
+                item.className = 'payment-item glass-card';
+                item.innerHTML = `
+                    <div class="payment-info">
+                        <div style="font-weight:600;">${txn.name} <small style="color:var(--slate);opacity:0.7;">(${txn.studentId})</small></div>
+                        <div style="font-size:var(--text-xs);color:var(--slate);">
+                            <i class="far fa-clock"></i> ${dateStr} • ${timeStr} 
+                            <span style="margin:0 var(--space-xs);">•</span>
+                            <i class="fas fa-${methodIcon}"></i> ${methodDisplay}
+                        </div>
+                    </div>
+                    <div class="payment-amount">
+                        ₹${txn.amount.toLocaleString('en-IN', {minimumFractionDigits:2})}
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+            
+            updateSummary(transactions.length, calculateTotal(transactions));
+        }
+        
+        function calculateTotal(transactions) {
+            return transactions.reduce((sum, txn) => sum + txn.amount, 0);
+        }
+        
+        function updateSummary(count, total) {
+            document.getElementById('filtered-count').textContent = count;
+            document.getElementById('filtered-total').textContent = total.toLocaleString('en-IN', {
+                minimumFractionDigits: 2
+            });
+        }
+        
+        function filterTransactionsByDate() {
+            const dateInput = document.getElementById('transaction-filter-date').value;
+            if (!dateInput) {
+                displayTransactions(allTransactions);
+                return;
+            }
+            
+            const filtered = allTransactions.filter(txn => {
+                const txnDate = txn.timestamp.toDate().toISOString().split('T')[0];
+                return txnDate === dateInput;
+            });
+            displayTransactions(filtered);
+        }
+        
+        function clearDateFilter() {
+            document.getElementById('transaction-filter-date').value = '';
+            displayTransactions(allTransactions);
+        }
+        
+        function loadSampleTransactions() {
+            allTransactions = [
+                {
+                    id: "TXN" + Math.floor(Math.random() * 10000),
+                    studentId: "S00123",
+                    name: "Sample Student",
+                    amount: 12500,
+                    method: "razorpay",
+                    status: "completed",
+                    timestamp: firebase.firestore.Timestamp.now()
+                }
+            ];
+            displayTransactions(allTransactions);
+        }
+        // Monthly Report Functionality
+        function updateMonthlyReport() {
+            const monthInput = document.getElementById('report-month').value;
+            if (!monthInput) {
+                // Set default to current month if no month is selected
+                const now = new Date();
+                const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+                document.getElementById('report-month').value = currentMonth;
+                fetchMonthlyTotal(currentMonth);
+            } else {
+                fetchMonthlyTotal(monthInput);
+            }
+        }
+
+        function fetchMonthlyTotal(monthStr) {
+            // Parse the month string (YYYY-MM)
+            const year = parseInt(monthStr.split('-')[0]);
+            const month = parseInt(monthStr.split('-')[1]) - 1; // JavaScript months are 0-indexed
+            
+            // Create date range for the selected month
+            const startDate = new Date(year, month, 1);
+            const endDate = new Date(year, month + 1, 0); // Last day of the month
+            endDate.setHours(23, 59, 59, 999); // End of the day
+            
+            // Convert to Firestore timestamps
+            const startTimestamp = firebase.firestore.Timestamp.fromDate(startDate);
+            const endTimestamp = firebase.firestore.Timestamp.fromDate(endDate);
+            
+            // Query Firestore for payments in the selected month
+            db.collection("payments")
+                .where("timestamp", ">", startTimestamp)
+                .where("timestamp", "<", endTimestamp)
+                .get()
+                .then((querySnapshot) => {
+                    let monthlyTotal = 0;
+                    querySnapshot.forEach((doc) => {
+                        const data = doc.data();
+                        monthlyTotal += data.amount || 0;
+                    });
+                    
+                    // Update the monthly total display
+                    document.getElementById('monthly-total').textContent = monthlyTotal.toLocaleString('en-IN', {
+                        minimumFractionDigits: 2
+                    });
+                })
+                .catch((error) => {
+                    console.error("Error fetching monthly report: ", error);
+                    document.getElementById('monthly-total').textContent = "Error";
+                });
+        }
+
+        // Initialize when management dashboard is shown
+        document.getElementById('show-management-dashboard-button').addEventListener('click', () => {
+            showSection('management-dashboard');
+            loadTransactions();
+            updateMonthlyReport();
+            fetchTotalStudents();
+            
+            // Initialize month navigation after dashboard is shown
+            initializeMonthNavigation();
+        });
+        
+        // Add event listeners for report inputs
+        document.getElementById('report-month').addEventListener('change', updateMonthlyReport);
+        
+        // Function to initialize month navigation
+        function initializeMonthNavigation() {
+            // Check if already initialized to prevent multiple initializations
+            if (document.getElementById('report-month')._flatpickr) {
+                return; // Already initialized
+            }
+            
+            // Initialize flatpickr on the month input
+            flatpickr("#report-month", {
+                plugins: [],
+                disableMobile: false,
+                locale: {
+                    format: "F Y"
+                },
+                altInput: true,
+                altFormat: "F Y",
+                dateFormat: "Y-m",
+                theme: "light",
+                static: true,
+                // Change this to force month-only picker
+                monthSelectorType: "dropdown",
+                // Hide the day calendar completely
+                onDayCreate: function(dObj, dStr, fp, dayElem) {
+                    // Hide all day elements
+                    dayElem.style.visibility = "hidden";
+                    dayElem.style.pointerEvents = "none";
+                },
+                // Force the calendar to open in month view
+                onOpen: function(selectedDates, dateStr, instance) {
+                    // Add a class to hide day elements via CSS
+                    instance.calendarContainer.classList.add("month-only-calendar");
+                }
+            });
+            
+            // You can also add a click handler for the calendar button
+            document.getElementById('show-calendar-btn').addEventListener('click', () => {
+                if (document.getElementById('report-month')._flatpickr) {
+                    document.getElementById('report-month')._flatpickr.open();
+                }
+            });
+            
+            // Month navigation buttons
+            document.getElementById('prev-month-btn').addEventListener('click', () => {
+                navigateMonth(-1);
+            });
+            
+            document.getElementById('next-month-btn').addEventListener('click', () => {
+                navigateMonth(1);
+            });
+        }
+        // Initialize flatpickr on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeMonthNavigation();
+        });
+        
+        // Fetch total number of students
+        function fetchTotalStudents() {
+            db.collection("students")
+                .get()
+                .then((querySnapshot) => {
+                    document.getElementById('total-students').textContent = querySnapshot.size;
+                })
+                .catch((error) => {
+                    console.error("Error fetching student count: ", error);
+                    document.getElementById('total-students').textContent = "Error";
+                });
+        }
+        
+        // Navigation function
+        function showSection(sectionId) {
+            document.querySelectorAll('section').forEach(section => {
+                section.classList.add('hidden');
+            });
+            document.getElementById(sectionId).classList.remove('hidden');
+        }
+        
+        // Initialize event listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            // Add animation to all cards
+            const cards = document.querySelectorAll('.glass-card');
+            cards.forEach((card, index) => {
+                card.style.animationDelay = `${index * 0.1}s`;
+            });
+            
+            // Navigation buttons
+            document.getElementById('fetch-fee-details-button').addEventListener('click', () => showSection('search-section'));
+            document.getElementById('add-student-button').addEventListener('click', () => showSection('add-student-section'));
+            document.getElementById('back-to-search-button').addEventListener('click', () => showSection('search-section'));
+            document.getElementById('back-to-dashboard-from-details').addEventListener('click', () => showSection('dashboard-options'));
+            
+            // Logout button
+            document.getElementById('logout-button').addEventListener('click', () => {
+                // Implement your logout logic here
+                window.location.href = 'index.html';
+            });
+            
+            // Payment is initialized in auth.js
+            // No need to call setupPayment() here
+        });
+  
+        // Function to handle month navigation
+        function navigateMonth(direction) {
+            const currentValue = document.getElementById('report-month').value;
+            if (currentValue) {
+                const [year, month] = currentValue.split('-').map(num => parseInt(num));
+                
+                // Create a date object for the current selection
+                // Month is 0-indexed in JavaScript Date
+                let newDate = new Date(year, month - 1);
+                
+                // Add or subtract a month
+                newDate.setMonth(newDate.getMonth() + direction);
+                
+                // Format the new date as YYYY-MM
+                const newYear = newDate.getFullYear();
+                const newMonth = String(newDate.getMonth() + 1).padStart(2, '0');
+                const newValue = `${newYear}-${newMonth}`;
+                
+                // Update the input value
+                document.getElementById('report-month').value = newValue;
+                
+                // Update the flatpickr instance if it exists
+                if (document.getElementById('report-month')._flatpickr) {
+                    document.getElementById('report-month')._flatpickr.setDate(newValue);
+                }
+                
+                // Fetch the monthly total for the new month
+                fetchMonthlyTotal(newValue);
+                
+                console.log(`Navigated to ${newValue}`);
+            }
+        }
+        
+        // Export functionality for student data and payment records
+        function exportStudentData() {
+            db.collection("students")
+                .get()
+                .then((querySnapshot) => {
+                    const students = [];
+                    let serialNo = 1;
+                    querySnapshot.forEach((doc) => {
+                        const data = doc.data();
+                        students.push({
+                            'S.No': serialNo++,
+                            'Student ID': data.studentId,
+                            'Name': data.name,
+                            'Father\'s Name': data.fathername,
+                            'Mother\'s Name': data.mothername,
+                            'Mobile Number': data.mobilenumber,
+                            'Course': data.course,
+                            'Year': data.year,
+                            'Total Fee': data.totalfee,
+                            'Balance Fee': data.balancefee
+                        });
+                    });
+
+                    if (students.length === 0) {
+                        alert("No student data available to export");
+                        return;
+                    }
+
+                    // Create worksheet from student data
+                    const worksheet = XLSX.utils.json_to_sheet(students);
+                    
+                    // Set column widths to ensure all data is visible
+                    const columnWidths = [
+                        { wch: 5 },  // S.No
+                        { wch: 15 }, // Student ID
+                        { wch: 25 }, // Name
+                        { wch: 25 }, // Father's Name
+                        { wch: 25 }, // Mother's Name
+                        { wch: 15 }, // Mobile Number
+                        { wch: 15 }, // Course
+                        { wch: 8 },  // Year
+                        { wch: 12 }, // Total Fee
+                        { wch: 12 }  // Balance Fee
+                    ];
+                    worksheet['!cols'] = columnWidths;
+                    
+                    const workbook = XLSX.utils.book_new();
+                    XLSX.utils.book_append_sheet(workbook, worksheet, "Students");
+
+                    // Generate Excel file and trigger download
+                    const filename = `SVEC_Students_${new Date().toISOString().split('T')[0]}.xlsx`;
+                    XLSX.writeFile(workbook, filename);
+                })
+                .catch((error) => {
+                    console.error("Error exporting student data: ", error);
+                    alert("Failed to export student data. Please try again.");
+                });
+        }
+        function exportPaymentData() {
+            // Get filter date if any
+            const dateInput = document.getElementById('transaction-filter-date').value;
+            let transactions = allTransactions;
+            
+            // Apply date filter if selected
+            if (dateInput) {
+                transactions = transactions.filter(txn => {
+                    const txnDate = txn.timestamp.toDate().toISOString().split('T')[0];
+                    return txnDate === dateInput;
+                });
+            }
+
+            if (transactions.length === 0) {
+                alert("No payment data available to export");
+                return;
+            }
+
+            // Sort transactions by date and time for proper sequencing
+            transactions.sort((a, b) => {
+                // First sort by date (newest first)
+                const dateA = a.timestamp.toDate();
+                const dateB = b.timestamp.toDate();
+                return dateB - dateA;
+            });
+            
+            // Format data for export with serial numbers and receipt numbers
+            const paymentData = transactions.map((txn, index) => {
+                const date = txn.timestamp.toDate();
+                
+                // CRITICAL: Simply use the receipt number DIRECTLY from firebase without any custom logic
+                // This ensures the receipt number in the export EXACTLY matches what's in the database
+                const receiptNumber = txn.receiptNumber;
+                
+                // Log any receipt numbers that are missing for debugging
+                if (!receiptNumber) {
+                    console.error("Missing receipt number for transaction:", txn.id);
+                }
+                
+                // Determine payment method correctly
+                let paymentMethod = 'Unknown';
+                if (txn.method) {
+                    const method = txn.method.toLowerCase();
+                    if (method.includes('razorpay') || method.includes('online')) {
+                        paymentMethod = 'Online';
+                    } else if (method.includes('cash')) {
+                        paymentMethod = 'Cash';
+                    } else {
+                        paymentMethod = txn.method; // Use original if not recognized
+                    }
+                }
+                
+                return {
+                    'S.No': index + 1,
+                    'Receipt Number': receiptNumber,
+                    'Transaction ID': txn.id,
+                    'Student ID': txn.studentId,
+                    'Student Name': txn.name,
+                    'Amount': txn.amount,
+                    'Payment Method': paymentMethod,
+                    'Status': txn.status,
+                    'Date': date.toLocaleDateString('en-IN', {day: '2-digit', month: '2-digit', year: 'numeric'}),
+                    'Time': date.toLocaleTimeString('en-IN', {hour: '2-digit', minute: '2-digit'})
+                };
+            });
+
+            // Create worksheet from payment data
+            const worksheet = XLSX.utils.json_to_sheet(paymentData);
+            
+            // Set column widths to ensure all data is visible
+            const columnWidths = [
+                { wch: 5 },   // S.No
+                { wch: 15 },  // Receipt Number
+                { wch: 20 },  // Transaction ID
+                { wch: 15 },  // Student ID
+                { wch: 25 },  // Student Name
+                { wch: 12 },  // Amount
+                { wch: 15 },  // Payment Method
+                { wch: 10 },  // Status
+                { wch: 12 },  // Date
+                { wch: 10 }   // Time
+            ];
+            worksheet['!cols'] = columnWidths;
+            
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Payments");
+
+            // Generate Excel file and trigger download
+            const filename = `SVEC_Payments_${new Date().toISOString().split('T')[0]}.xlsx`;
+            XLSX.writeFile(workbook, filename);
+        }
+
+        // Add event listeners for export buttons
+        document.addEventListener('DOMContentLoaded', () => {
+            // Previous event listeners...
+            
+            // Export functionality
+            const exportStudentsBtn = document.getElementById('export-students-button');
+            if (exportStudentsBtn) {
+                exportStudentsBtn.addEventListener('click', exportStudentData);
+            }
+            
+            const exportPaymentsBtn = document.getElementById('export-payments-button');
+            if (exportPaymentsBtn) {
+                exportPaymentsBtn.addEventListener('click', exportPaymentData);
+            }
+        });
+
+        // Note: The setupPayment function is now imported from auth.js to prevent duplicate payment processing
+
+        // ===== COMPLAINTS CHATBOT FUNCTIONALITY =====
+        
+        // Chatbot state management
+        let chatHistory = [];
+        let complaintsData = {
+            total: 0,
+            resolved: 0,
+            pending: 0
+        };
+        
+        // AI Response Templates
+        const responseTemplates = {
+            technical: [
+                "I understand you're experiencing a technical issue. Can you provide more details about what specific problem you're encountering?",
+                "Technical issues can be frustrating. Let me help you troubleshoot this. What error messages are you seeing?",
+                "I'll help you resolve this technical problem. Can you describe the steps that led to this issue?"
+            ],
+            payroll: [
+                "I see you have a payroll concern. This is important and I'll make sure it gets proper attention. Can you specify what aspect of your payroll needs review?",
+                "Payroll matters require immediate attention. Let me gather some details to help resolve this quickly. What specific issue are you experiencing?",
+                "I understand payroll concerns can be stressful. I'm here to help. Can you provide more information about the discrepancy?"
+            ],
+            records: [
+                "Student records are crucial for academic operations. I'll help you with this. What specific student record issue do you need assistance with?",
+                "I can help you with student records management. Can you provide more details about what you need to access or update?",
+                "Student record issues need prompt resolution. Let me understand the specific problem you're facing."
+            ],
+            facility: [
+                "Facility issues affect everyone's work environment. I'll make sure this gets reported properly. Can you describe the specific facility problem?",
+                "Thank you for reporting this facility issue. Proper maintenance is important for everyone. Where exactly is the problem located?",
+                "I'll help you report this facility concern to the appropriate department. Can you provide the location and nature of the issue?"
+            ],
+            general: [
+                "I understand your concern. Can you provide more specific details so I can better assist you?",
+                "Thank you for reaching out. I'm here to help resolve your issue. Can you elaborate on what you're experiencing?",
+                "I want to make sure I understand your situation correctly. Can you provide additional context?"
+            ]
+        };
+        
+        // Initialize chatbot when section is shown
+        document.getElementById('show-complaints-chatbot-button').addEventListener('click', () => {
+            showSection('complaints-chatbot');
+            initializeChatbot();
+        });
+        
+        function initializeChatbot() {
+            // Load chat history from localStorage
+            const savedHistory = localStorage.getItem('staffComplaintsHistory');
+            if (savedHistory) {
+                chatHistory = JSON.parse(savedHistory);
+                displayChatHistory();
+            }
+            
+            // Load complaints statistics
+            loadComplaintsStats();
+            
+            // Setup event listeners
+            setupChatEventListeners();
+        }
+        
+        function setupChatEventListeners() {
+            const chatInput = document.getElementById('chat-input');
+            const sendButton = document.getElementById('send-message');
+            const clearButton = document.getElementById('clear-chat');
+            const exportButton = document.getElementById('export-chat');
+            const charCount = document.getElementById('char-count');
+            
+            // Send message on button click
+            sendButton.addEventListener('click', sendMessage);
+            
+            // Send message on Enter key
+            chatInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+            
+            // Character count update
+            chatInput.addEventListener('input', () => {
+                const count = chatInput.value.length;
+                charCount.textContent = count;
+                
+                // Change color based on character limit
+                if (count > 450) {
+                    charCount.style.color = '#ef4444';
+                } else if (count > 400) {
+                    charCount.style.color = '#f59e0b';
+                } else {
+                    charCount.style.color = '#94a3b8';
+                }
+            });
+            
+            // Clear chat
+            clearButton.addEventListener('click', clearChat);
+            
+            // Export chat
+            exportButton.addEventListener('click', exportChat);
+            
+            // Voice input (placeholder)
+            document.getElementById('voice-input').addEventListener('click', () => {
+                alert('Voice input feature coming soon!');
+            });
+            
+            // File attachment (placeholder)
+            document.getElementById('attach-file').addEventListener('click', () => {
+                alert('File attachment feature coming soon!');
+            });
+        }
+        
+        function sendMessage() {
+            const chatInput = document.getElementById('chat-input');
+            const message = chatInput.value.trim();
+            
+            if (!message) return;
+            
+            // Add user message to chat
+            addMessage(message, 'user');
+            
+            // Clear input
+            chatInput.value = '';
+            document.getElementById('char-count').textContent = '0';
+            
+            // Show typing indicator
+            showTypingIndicator();
+            
+            // Generate AI response after delay
+            setTimeout(() => {
+                hideTypingIndicator();
+                const aiResponse = generateAIResponse(message);
+                addMessage(aiResponse, 'bot');
+                
+                // Save to complaints if it's a complaint
+                if (isComplaint(message)) {
+                    saveComplaint(message, aiResponse);
+                }
+            }, 1500 + Math.random() * 1000); // Random delay for realism
+        }
+        
+        function sendQuickMessage(message) {
+            document.getElementById('chat-input').value = message;
+            sendMessage();
+        }
+        
+        function addMessage(content, sender) {
+            const messagesContainer = document.getElementById('chat-messages');
+            const timestamp = new Date().toLocaleTimeString('en-US', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}-message`;
+            
+            const avatarIcon = sender === 'bot' ? 'fas fa-robot' : 'fas fa-user';
+            
+            messageDiv.innerHTML = `
+                <div class="message-avatar">
+                    <i class="${avatarIcon}"></i>
+                </div>
+                <div class="message-content">
+                    <p>${content}</p>
+                </div>
+                <div class="message-time">${timestamp}</div>
+            `;
+            
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            
+            // Save to chat history
+            chatHistory.push({
+                content,
+                sender,
+                timestamp: new Date().toISOString()
+            });
+            
+            // Save to localStorage
+            localStorage.setItem('staffComplaintsHistory', JSON.stringify(chatHistory));
+        }
+        
+        function generateAIResponse(userMessage) {
+            const message = userMessage.toLowerCase();
+            
+            // Determine response category
+            let category = 'general';
+            if (message.includes('technical') || message.includes('system') || message.includes('error') || message.includes('bug')) {
+                category = 'technical';
+            } else if (message.includes('payroll') || message.includes('salary') || message.includes('payment')) {
+                category = 'payroll';
+            } else if (message.includes('student') || message.includes('record') || message.includes('grade')) {
+                category = 'records';
+            } else if (message.includes('facility') || message.includes('building') || message.includes('maintenance')) {
+                category = 'facility';
+            }
+            
+            // Get random response from category
+            const responses = responseTemplates[category];
+            const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+            
+            // Add follow-up suggestions
+            let followUp = "";
+            if (isComplaint(userMessage)) {
+                followUp = " I've logged this as a formal complaint and it will be reviewed by the appropriate department. You'll receive updates on the resolution progress.";
+            }
+            
+            return randomResponse + followUp;
+        }
+        
+        function isComplaint(message) {
+            const complaintKeywords = ['complaint', 'issue', 'problem', 'error', 'bug', 'broken', 'not working', 'concern', 'report'];
+            return complaintKeywords.some(keyword => message.toLowerCase().includes(keyword));
+        }
+        
+        function saveComplaint(userMessage, aiResponse) {
+            // Increment complaints count
+            complaintsData.total++;
+            complaintsData.pending++;
+            
+            // Update display
+            updateComplaintsStats();
+            
+            // Save to localStorage (in real app, this would go to a database)
+            const complaints = JSON.parse(localStorage.getItem('staffComplaints') || '[]');
+            complaints.push({
+                id: Date.now(),
+                message: userMessage,
+                response: aiResponse,
+                timestamp: new Date().toISOString(),
+                status: 'pending',
+                category: determineCategory(userMessage)
+            });
+            localStorage.setItem('staffComplaints', JSON.stringify(complaints));
+        }
+        
+        function determineCategory(message) {
+            const msg = message.toLowerCase();
+            if (msg.includes('technical') || msg.includes('system')) return 'Technical';
+            if (msg.includes('payroll') || msg.includes('salary')) return 'Payroll';
+            if (msg.includes('student') || msg.includes('record')) return 'Student Records';
+            if (msg.includes('facility') || msg.includes('building')) return 'Facility';
+            return 'General';
+        }
+        
+        function showTypingIndicator() {
+            document.getElementById('chat-typing').style.display = 'flex';
+            const messagesContainer = document.getElementById('chat-messages');
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+        
+        function hideTypingIndicator() {
+            document.getElementById('chat-typing').style.display = 'none';
+        }
+        
+        function clearChat() {
+            if (confirm('Are you sure you want to clear the chat history?')) {
+                chatHistory = [];
+                localStorage.removeItem('staffComplaintsHistory');
+                document.getElementById('chat-messages').innerHTML = `
+                    <div class="message bot-message">
+                        <div class="message-avatar">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <div class="message-content">
+                            <p>Hello! I'm your AI assistant for staff complaints and support. How can I help you today?</p>
+                            <div class="quick-actions">
+                                <button class="quick-action-btn" onclick="sendQuickMessage('I want to report a technical issue')">
+                                    <i class="fas fa-bug"></i> Technical Issue
+                                </button>
+                                <button class="quick-action-btn" onclick="sendQuickMessage('I have a payroll concern')">
+                                    <i class="fas fa-money-bill-wave"></i> Payroll Issue
+                                </button>
+                                <button class="quick-action-btn" onclick="sendQuickMessage('I need help with student records')">
+                                    <i class="fas fa-user-graduate"></i> Student Records
+                                </button>
+                                <button class="quick-action-btn" onclick="sendQuickMessage('I want to report a facility issue')">
+                                    <i class="fas fa-building"></i> Facility Issue
+                                </button>
+                            </div>
+                        </div>
+                        <div class="message-time">Just now</div>
+                    </div>
+                `;
+            }
+        }
+        
+        function exportChat() {
+            if (chatHistory.length === 0) {
+                alert('No chat history to export.');
+                return;
+            }
+            
+            const chatData = chatHistory.map(msg => ({
+                Time: new Date(msg.timestamp).toLocaleString(),
+                Sender: msg.sender === 'bot' ? 'AI Assistant' : 'Staff Member',
+                Message: msg.content
+            }));
+            
+            // Create and download Excel file
+            const ws = XLSX.utils.json_to_sheet(chatData);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Chat History');
+            
+            const fileName = `Staff_Chat_History_${new Date().toISOString().split('T')[0]}.xlsx`;
+            XLSX.writeFile(wb, fileName);
+        }
+        
+        function loadComplaintsStats() {
+            const complaints = JSON.parse(localStorage.getItem('staffComplaints') || '[]');
+            complaintsData.total = complaints.length;
+            complaintsData.resolved = complaints.filter(c => c.status === 'resolved').length;
+            complaintsData.pending = complaints.filter(c => c.status === 'pending').length;
+            
+            updateComplaintsStats();
+        }
+        
+        function updateComplaintsStats() {
+            document.getElementById('total-complaints').textContent = complaintsData.total;
+            document.getElementById('resolved-complaints').textContent = complaintsData.resolved;
+            document.getElementById('pending-complaints').textContent = complaintsData.pending;
+        }
+        
+        function displayChatHistory() {
+            const messagesContainer = document.getElementById('chat-messages');
+            // Clear existing messages except the initial bot message
+            const initialMessage = messagesContainer.querySelector('.bot-message');
+            messagesContainer.innerHTML = '';
+            messagesContainer.appendChild(initialMessage);
+            
+            // Add chat history
+            chatHistory.forEach(msg => {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${msg.sender}-message`;
+                
+                const avatarIcon = msg.sender === 'bot' ? 'fas fa-robot' : 'fas fa-user';
+                const timestamp = new Date(msg.timestamp).toLocaleTimeString('en-US', { 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                });
+                
+                messageDiv.innerHTML = `
+                    <div class="message-avatar">
+                        <i class="${avatarIcon}"></i>
+                    </div>
+                    <div class="message-content">
+                        <p>${msg.content}</p>
+                    </div>
+                    <div class="message-time">${timestamp}</div>
+                `;
+                
+                messagesContainer.appendChild(messageDiv);
+            });
+            
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+        
+        // View all complaints functionality
+        document.getElementById('view-all-complaints').addEventListener('click', () => {
+            const complaints = JSON.parse(localStorage.getItem('staffComplaints') || '[]');
+            
+            if (complaints.length === 0) {
+                alert('No complaints have been logged yet.');
+                return;
+            }
+            
+            // Create modal or new section to display all complaints
+            let complaintsHtml = `
+                <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; display: flex; align-items: center; justify-content: center;">
+                    <div style="background: white; padding: 2rem; border-radius: 1rem; max-width: 80%; max-height: 80%; overflow-y: auto; position: relative;">
+                        <h3 style="margin-top: 0;">All Staff Complaints</h3>
+                        <button onclick="this.parentElement.parentElement.remove()" style="position: absolute; top: 1rem; right: 1rem; background: #ef4444; color: white; border: none; padding: 0.5rem; border-radius: 50%; cursor: pointer;">×</button>
+                        <div style="display: grid; gap: 1rem;">
+            `;
+            
+            complaints.forEach((complaint, index) => {
+                const date = new Date(complaint.timestamp).toLocaleDateString();
+                const time = new Date(complaint.timestamp).toLocaleTimeString();
+                complaintsHtml += `
+                    <div style="border: 1px solid #e2e8f0; padding: 1rem; border-radius: 0.5rem; background: #f8fafc;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                            <strong>Complaint #${complaint.id}</strong>
+                            <span style="background: ${complaint.status === 'resolved' ? '#10b981' : '#f59e0b'}; color: white; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem;">
+                                ${complaint.status.toUpperCase()}
+                            </span>
+                        </div>
+                        <p><strong>Category:</strong> ${complaint.category}</p>
+                        <p><strong>Date:</strong> ${date} at ${time}</p>
+                        <p><strong>Message:</strong> ${complaint.message}</p>
+                        <p><strong>AI Response:</strong> ${complaint.response}</p>
+                    </div>
+                `;
+            });
+            
+            complaintsHtml += `
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.insertAdjacentHTML('beforeend', complaintsHtml);
+        });
+        
+        // ===== END COMPLAINTS CHATBOT FUNCTIONALITY =====
+    </script>
+</body>
+</html>
